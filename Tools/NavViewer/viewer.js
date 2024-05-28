@@ -17,6 +17,7 @@ const checkPortalVertices = document.getElementById('check-portal-vertices');
 const checkBBox = document.getElementById('check-bbox');
 const checkNumbers = document.getElementById('check-numbers');
 const checkKDTree = document.getElementById('check-kdtree');
+const checkAIGrid = document.getElementById('check-aigrid');
 const useOrderedEdgeColors = document.getElementById('check-use-ordered-edge-colors');
 const highlightArea = document.getElementById('highlight-area');
 const kdTreeDepth = document.getElementById('kd-tree-depth');
@@ -273,6 +274,18 @@ function renderBBoxWithColor(color, bbox) {
     scene.add(helper);
 }
 
+function renderLine(sx, sy, sz, ex, ey, ez, color) {
+    const points = [];
+    points.push(new THREE.Vector3(sy, sz, sx), new THREE.Vector3(ey, ez, ex));
+    
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+    const lineMaterial = new THREE.LineBasicMaterial({ color:color });
+    const line = new THREE.Line(geometry, lineMaterial);
+
+    scene.add(line);
+}
+
 function renderAxes() {
         const axes = [["X", [1,0,0]], ["Y", [0,1,0]], ["Z", [0,0,1]]]
         let color = 0x0000ff;
@@ -325,6 +338,29 @@ function reRender() {
         const surface = Areas[selectedMap][i];
         renderSurface(i, surface);
     }
+
+    if (checkAIGrid.checked) {
+        console.log("Rendering AI Grid")
+        const airg = AIGrids[selectedMap];
+        const p = airg["m_Properties"];
+        const aiGridBBox = [p.vMin["x"], p.vMin["y"], p.vMin["z"], p.vMax["x"], p.vMax["y"], p.vMax["z"]];
+        renderBBox(aiGridBBox);
+        
+        for (let i = 0; i < airg["m_WaypointList"].length; ++i) {
+            const waypoint = airg["m_WaypointList"][i];
+            const pos = waypoint["vPos"];
+            renderText(i, pos["x"], pos["y"], pos["z"]);
+            for (let j = 0; j < 8; ++j) {
+                let n = waypoint["nNeighbor" + j];
+                if (n != 65535) {
+                    const nWaypoint = airg["m_WaypointList"][n];
+                    const npos = nWaypoint["vPos"];
+                    renderLine(pos["x"], pos["y"], pos["z"], npos["x"], npos["y"], npos["z"], 0xFF0000);
+                }
+            }
+        }
+    }
+
     
     let maxDepth = -1;
     for (const [depth, bboxes] of Object.entries(KDTree[selectedMap])) {
@@ -380,3 +416,4 @@ checkPortalVertices.addEventListener('change', () => reRender());
 checkBBox.addEventListener('change', () => reRender());
 checkNumbers.addEventListener('change', () => reRender());
 checkKDTree.addEventListener('change', () => reRender());
+checkAIGrid.addEventListener('change', () => reRender());

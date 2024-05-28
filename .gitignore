@@ -363,7 +363,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /out
-/Tools/NavViewer/NavMeshes.js
 /Tools/NavViewer/Faces.js
 /Tools/NavViewer/Surfaces.js
 _build/
