@@ -17,12 +17,14 @@ const checkPortalVertices = document.getElementById('check-portal-vertices');
 const checkBBox = document.getElementById('check-bbox');
 const checkNumbers = document.getElementById('check-numbers');
 const checkKDTree = document.getElementById('check-kdtree');
-const checkAIGrid = document.getElementById('check-aigrid');
+const checkAiGrid = document.getElementById('check-aigrid');
 const useOrderedEdgeColors = document.getElementById('check-use-ordered-edge-colors');
 const highlightArea = document.getElementById('highlight-area');
 const kdTreeDepth = document.getElementById('kd-tree-depth');
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
+let highlightedSurface = null;
+let selectedMap = null;
 
 function renderTriangle(v1, v2, v3, color) {
     const geometry = new THREE.BufferGeometry();
@@ -87,12 +89,12 @@ function setLineSegmentColor(lineSegmentIndex, colors, hasAdjacentArea) {
     colors[lineSegmentIndex * 6 + 5] = lineSegmentColor[2];
 }
 
-function renderText(number, x, y, z) {
+function renderText(number, x, y, z, color, fontsize) {
     const text = new THREE.TextSprite({
         alignment: 'center',
-        color: '#ffffff',
+        color: color,
         fontFamily: 'Arial',
-        fontSize: .5,
+        fontSize: fontsize,
         text: number.toString(),
     });
 
@@ -105,7 +107,7 @@ function renderEdges(edges, showEdgeNumbers) {
     if (showEdgeNumbers) {
         let edgeIndex = 0;
         for (const edge of edges) {
-            renderText(edgeIndex, edge[0], edge[1], edge[2]);
+            renderText(edgeIndex, edge[0], edge[1], edge[2], "#FFFFFF", 0.5);
             edgeIndex++;
         }
     }
@@ -200,6 +202,11 @@ function renderBasisVert(faceIdx, vertex) {
     scene.add(text);
 }
 
+function setHighlightedArea() {
+    const index = parseInt(highlightArea.value);
+    highlightedSurface = Areas[selectedMap][index];
+}
+
 function renderSurface(i, surface) {
     const centerX = surface[0];
     const centerY = surface[1];
@@ -245,7 +252,7 @@ function renderSurface(i, surface) {
     }
 
     if (checkNumbers.checked) {
-        renderText(i, centerX, centerY, centerZ);
+        renderText(i, centerX, centerY, centerZ, "#FFFFFF", 0.5);
     }
 }
 
@@ -300,10 +307,55 @@ function renderAxes() {
 
             scene.add(line);
             color *= 256;
-            renderText(axis[0], axis[1][0], axis[1][1], axis[1][2]);
+            renderText(axis[0], axis[1][0], axis[1][1], axis[1][2], "#FFFFFF", 0.5);
         }
 
 }
+
+function dist(x0, y0, z0, x1, y1, z1){
+    let deltaX = x1 - x0;
+    let deltaY = y1 - y0;
+    let deltaZ = z1 - z0;
+    return Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);;
+}
+
+function renderAiGrid() {
+    console.log("Rendering AI Grid")
+    const airg = AIGrids[selectedMap];
+    const p = airg["m_Properties"];
+    const aiGridBBox = [p.vMin["x"], p.vMin["y"], p.vMin["z"], p.vMax["x"], p.vMax["y"], p.vMax["z"]];
+    renderBBox(aiGridBBox);
+    
+    let cx;
+    let cy;
+    let cz;
+    let maxRadius;
+    if (highlightedSurface != null) {
+        cx = highlightedSurface[0];
+        cy = highlightedSurface[1];
+        cz = highlightedSurface[2];
+        maxRadius = highlightedSurface[3];
+    }
+    for (let i = 0; i < airg["m_WaypointList"].length; ++i) {
+        const waypoint = airg["m_WaypointList"][i];
+        const pos = waypoint["vPos"];
+        if (highlightedSurface != null) {
+            if (dist(pos["x"], pos["y"], pos["z"], cx, cy, cz) <= maxRadius) {
+                renderText(i, pos["x"], pos["y"], pos["z"], "#999999", 0.1);
+            }
+        }
+        for (let j = 0; j < 8; ++j) {
+            let n = waypoint["nNeighbor" + j];
+            if (n != 65535) {
+                const nWaypoint = airg["m_WaypointList"][n];
+                const npos = nWaypoint["vPos"];
+                renderLine(pos["x"], pos["y"], pos["z"], npos["x"], npos["y"], npos["z"], 0xFF0000);
+            }
+        }
+    }
+
+}
+
 controls.update();
 
 function animate() {
@@ -317,7 +369,7 @@ function animate() {
 animate();
 
 function resetCamera() {
-    const selectedMap = mapSelector.value;
+    selectedMap = mapSelector.value;
     camera.position.set(-40, 50, 80);
 }
 
@@ -327,7 +379,6 @@ function reRender() {
         scene.remove(scene.children[0]);
     }
 
-    const selectedMap = mapSelector.value;
     console.log('Rendering ' + selectedMap);
 
     if (checkBBox.checked) {
@@ -339,26 +390,8 @@ function reRender() {
         renderSurface(i, surface);
     }
 
-    if (checkAIGrid.checked) {
-        console.log("Rendering AI Grid")
-        const airg = AIGrids[selectedMap];
-        const p = airg["m_Properties"];
-        const aiGridBBox = [p.vMin["x"], p.vMin["y"], p.vMin["z"], p.vMax["x"], p.vMax["y"], p.vMax["z"]];
-        renderBBox(aiGridBBox);
-        
-        for (let i = 0; i < airg["m_WaypointList"].length; ++i) {
-            const waypoint = airg["m_WaypointList"][i];
-            const pos = waypoint["vPos"];
-            renderText(i, pos["x"], pos["y"], pos["z"]);
-            for (let j = 0; j < 8; ++j) {
-                let n = waypoint["nNeighbor" + j];
-                if (n != 65535) {
-                    const nWaypoint = airg["m_WaypointList"][n];
-                    const npos = nWaypoint["vPos"];
-                    renderLine(pos["x"], pos["y"], pos["z"], npos["x"], npos["y"], npos["z"], 0xFF0000);
-                }
-            }
-        }
+    if (checkAiGrid.checked) {
+        renderAiGrid()
     }
 
     
@@ -406,7 +439,7 @@ reRender();
 mapSelector.addEventListener('change', () => { resetCamera(); reRender()});
 checkRadii.addEventListener('change', () => reRender());
 useOrderedEdgeColors.addEventListener('change', () => reRender());
-highlightArea.addEventListener('input', () => reRender());
+highlightArea.addEventListener('input', () => { setHighlightedArea(); reRender()});
 kdTreeDepth.addEventListener('input', () => reRender());
 checkCenters.addEventListener('change', () => reRender());
 checkFaces.addEventListener('change', () => reRender());
@@ -416,4 +449,4 @@ checkPortalVertices.addEventListener('change', () => reRender());
 checkBBox.addEventListener('change', () => reRender());
 checkNumbers.addEventListener('change', () => reRender());
 checkKDTree.addEventListener('change', () => reRender());
-checkAIGrid.addEventListener('change', () => reRender());
+checkAiGrid.addEventListener('change', () => reRender());
