@@ -341,7 +341,7 @@ function renderAiGrid() {
         const pos = waypoint["vPos"];
         if (highlightedSurface != null) {
             if (dist(pos["x"], pos["y"], pos["z"], cx, cy, cz) <= maxRadius) {
-                renderText(i, pos["x"], pos["y"], pos["z"], "#999999", 0.1);
+                renderText(i, pos["x"], pos["y"], pos["z"], "#aaaaaa", 0.1);
             }
         }
         for (let j = 0; j < 8; ++j) {

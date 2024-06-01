@@ -266,6 +266,57 @@ extern "C" void OutputNavMesh_JSON(const char* p_NavMeshPath, const char* p_NavM
 		OutputNavMesh_JSON_Write(&s_NavMesh, p_NavMeshOutputPath);
 	}
 }
+void OutputAirg_AIRG_Write(NavPower::NavMesh* p_NavMesh, const char* p_AirgOutputPath)
+{
+	// Get output filename and delete file if it exists
+	const std::string s_OutputFileName = std::filesystem::path(p_AirgOutputPath).filename().string();
+	std::filesystem::remove(s_OutputFileName);
+
+	// Write the Navmesh to NAVP binary file
+	std::ofstream fileOutputStream(s_OutputFileName, std::ios::out | std::ios::binary | std::ios::app);
+	p_NavMesh->writeBinary(fileOutputStream);
+	fileOutputStream.close();
+}
+
+void OutputAirg_JSON_Write(NavPower::NavMesh* p_NavMesh, const char* p_AirgOutputPath)
+{
+	// Get output filename and delete file if it exists
+	const std::string s_OutputFileName = std::filesystem::path(p_AirgOutputPath).filename().string();
+	std::filesystem::remove(s_OutputFileName);
+
+	// Write the navp to JSON file
+	std::ofstream fileOutputStream(s_OutputFileName);
+	p_NavMesh->writeJson(fileOutputStream);
+	fileOutputStream.close();
+}
+
+// Outputs the navmesh to binary format for use by Hitman WoA
+extern "C" void OutputAirg_JSON(const char* p_NavMeshPath, const char* p_AirgOutputPath, bool b_SourceIsJson = false)
+{
+	if (b_SourceIsJson)
+	{
+		NavPower::NavMesh s_NavMesh = LoadNavMeshFromJson(p_NavMeshPath);
+		OutputAirg_JSON_Write(&s_NavMesh, p_AirgOutputPath);
+	}
+	else {
+		NavPower::NavMesh s_NavMesh = LoadNavMeshFromBinary(p_NavMeshPath);
+		OutputAirg_JSON_Write(&s_NavMesh, p_AirgOutputPath);
+	}
+}
+
+// Outputs the navmesh to binary format for use by Hitman WoA
+extern "C" void OutputAirg_AIRG(const char* p_NavMeshPath, const char* p_AirgOutputPath, bool b_SourceIsJson = false)
+{
+	if (b_SourceIsJson)
+	{
+		NavPower::NavMesh s_NavMesh = LoadNavMeshFromJson(p_NavMeshPath);
+		OutputAirg_AIRG_Write(&s_NavMesh, p_AirgOutputPath);
+	}
+	else {
+		NavPower::NavMesh s_NavMesh = LoadNavMeshFromBinary(p_NavMeshPath);
+		OutputAirg_AIRG_Write(&s_NavMesh, p_AirgOutputPath);
+	}
+}
 
 void OutputNavMesh_VIEWER_print(NavPower::NavMesh* p_NavMesh, const std::string s_FileName)
 {

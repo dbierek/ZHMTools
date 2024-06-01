@@ -23,6 +23,8 @@ extern "C"
 	NAVWEAKNESS_API void OutputNavMesh_VIEWER(const char* p_NavMeshPath, bool b_SourceIsJson);
 	NAVWEAKNESS_API void OutputNavMesh_NAVP(const char* p_NavMeshPath, const char* p_NavMeshOutputPath, bool p_SourceIsJson);
 	NAVWEAKNESS_API void OutputNavMesh_JSON(const char* p_NavMeshPath, const char* p_NavMeshOutputPath, bool p_SourceIsJson);
+	NAVWEAKNESS_API void OutputAirg_AIRG(const char* p_NavMeshPath, const char* p_AirgOutputPath, bool p_SourceIsJson);
+	NAVWEAKNESS_API void OutputAirg_JSON(const char* p_NavMeshPath, const char* p_AirgOutputPath, bool p_SourceIsJson);
 
 #ifdef __cplusplus
 }
