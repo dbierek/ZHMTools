@@ -365,4 +365,6 @@ FodyWeavers.xsd
 /out
 /Tools/NavViewer/Faces.js
 /Tools/NavViewer/Surfaces.js
+/Tools/NavViewer/NavMeshes.js
+/Tools/NavViewer/AIGrids.js
 _build/
