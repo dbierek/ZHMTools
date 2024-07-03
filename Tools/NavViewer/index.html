@@ -23,6 +23,14 @@
             background: rgba(255, 255, 255, 0.5);
             padding: 10px;
         }
+
+        #airg-editor {
+            position: absolute;
+            left: 250px;
+            top: 0;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
@@ -41,10 +49,50 @@
         <label><input id="check-numbers" type="checkbox" /> Render surface numbers</label><br />
         <label><input id="check-kdtree" type="checkbox" /> Render k-d tree</label><br />
         <label><input id="check-aigrid" type="checkbox" /> Render AIRG</label><br />
+        <label><input id="check-aigrid-show-all" type="checkbox" /> Show all AIRG indices</label><br />
         <label><input id="check-use-ordered-edge-colors" type="checkbox" /> Use ordered edge colors</label><br />
         <label><input id="highlight-area" type="text" style='width:5em'/> Highlight area #</label><br />
         <label><input id="kd-tree-depth" type="range" style='width:5em'/> Show KD Tree at depth</label><br />
     </div>
+    <div id="airg-editor" style="visibility: hidden;">
+        <p>AIRG Editor:</p>
+        <input type="button" value="Load AIRG" onclick="document.getElementById('airg-file-input').click();" /></br>
+        <input type="file" style="display:none;" id="airg-file-input" name="file"/>
+
+        <label>
+            <input id="airg-vmin-x" style="width: 50px" />
+            <input id="airg-vmin-y" style="width: 50px" />
+            <input id="airg-vmin-z" style="width: 50px" />
+            vMin
+        </label><br />
+
+        <label>
+            <input id="airg-vmax-x" style="width: 50px" />
+            <input id="airg-vmax-y" style="width: 50px" />
+            <input id="airg-vmax-z" style="width: 50px" />
+            vMax
+        </label><br />        
+        <label><input id="airg-nGridWidth" />nGridWidth</label><br />
+        <label><input id="airg-fGridSpacing" />fGridSpacing</label><br />
+        <label><input id="airg-nVisibilityRange" />nVisibilityRange</label><br />
+        <label><input id="airg-mHighVisibilityBitsBytes" />m_HighVisibilityBits.m_aBytes</label><br />
+        <label><input id="airg-mHighVisibilityBitsSize" />m_HighVisibilityBits.m_nSize</label><br />
+        <label><input id="airg-mLowVisibilityBitsBytes" />m_LowVisibilityBits.m_aBytes</label><br />
+        <label><input id="airg-mLowVisibilityBitsSize" />m_LowVisibilityBits.m_nSize</label><br />
+        <label><input id="airg-mNodeCount" />m_nNodeCount</label><br />
+        <label><textarea id="airg-mWaypointList"></textarea> m_WaypointList</label><br />
+        <label><textarea id="airg-mDeadEndDataBytes"></textarea> m_deadEndData.m_aBytes</label><br />
+        <label><input id="airg-mDeadEndDataSize" /> m_deadEndData.m_nSize</label><br />
+        <label><textarea id="airg-mPVisibilityDate"></textarea> m_pVisibilityData</label><br />
+        <button id="airg-update">Update AIRG</button><br />
+        <button id="airg-save">Save AIRG</button><br />
+    </div>
+    <script>
+const AIGrids = {};
+const Areas = {};
+const KDTree = {};
+
+    </script>
     <script src="three.min.js"></script>
     <script src="https://unpkg.com/@seregpie/three.text-texture"></script>
     <script src="https://unpkg.com/@seregpie/three.text-sprite"></script>

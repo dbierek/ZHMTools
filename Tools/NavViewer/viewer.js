@@ -18,13 +18,115 @@ const checkBBox = document.getElementById('check-bbox');
 const checkNumbers = document.getElementById('check-numbers');
 const checkKDTree = document.getElementById('check-kdtree');
 const checkAiGrid = document.getElementById('check-aigrid');
+const checkAiGridShowAll = document.getElementById('check-aigrid-show-all');
 const useOrderedEdgeColors = document.getElementById('check-use-ordered-edge-colors');
 const highlightArea = document.getElementById('highlight-area');
 const kdTreeDepth = document.getElementById('kd-tree-depth');
+const airgEditor = document.getElementById('airg-editor');
+const airgFileInput = document.getElementById('airg-file-input');
+const airgSave = document.getElementById('airg-save');
 
+const airgVminX = document.getElementById('airg-vmin-x');
+const airgVminY = document.getElementById('airg-vmin-y');
+const airgVminZ = document.getElementById('airg-vmin-z');
+const airgVmaxX = document.getElementById('airg-vmax-x');
+const airgVmaxY = document.getElementById('airg-vmax-y');
+const airgVmaxZ = document.getElementById('airg-vmax-z');
+const airgNGridWidth = document.getElementById('airg-nGridWidth');
+const airgFGridSpacing = document.getElementById('airg-fGridSpacing');
+const airgNVisibilityRange = document.getElementById('airg-nVisibilityRange');
+const airgUpdate = document.getElementById("airg-update");
+const airgHighVisibilityBitsBytes = document.getElementById("airg-mHighVisibilityBitsBytes");
+const airgHighVisibilityBitsSize = document.getElementById("airg-mHighVisibilityBitsSize");
+const airgLowVisibilityBitsBytes = document.getElementById("airg-mLowVisibilityBitsBytes");
+const airgLowVisibilityBitsSize = document.getElementById("airg-mLowVisibilityBitsSize");
+const airgNodeCount = document.getElementById("airg-mNodeCount");
+const airgWaypointList = document.getElementById("airg-mWaypointList");
+const airgDeadEndDataBytes = document.getElementById("airg-mDeadEndDataBytes");
+const airgDeadEndDataSize = document.getElementById("airg-mDeadEndDataSize");
+const airgVisibilityData = document.getElementById("airg-mPVisibilityDate");
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 let highlightedSurface = null;
 let selectedMap = null;
+
+async function exportToAirgJson() {
+    const blob = new Blob([
+        JSON.stringify(
+            AIGrids["editor"]
+        , null, 2)
+    ], {
+        type: "application/json"
+    });
+    const newHandle = await window.showSaveFilePicker({
+        types: [{
+            description: "Airg Json",
+            accept: {
+                "application/json": [ ".json" ]
+            },
+        }],
+        id: "save-json-file-picker",
+        excludeAcceptAllOption: true,
+    });
+    const writableStream = await newHandle.createWritable();
+    await writableStream.write(blob);
+    await writableStream.close();
+}
+
+function onFileSelected(event) {
+    var selectedFile = event.target.files[0];
+    var reader = new FileReader();
+  
+    reader.onload = function(event) {
+        AIGrids["editor"] = JSON.parse(event.target.result);
+        reRender();
+    };
+  
+    reader.readAsText(selectedFile);
+}
+
+function updateAirgFromEditorValues() {
+    AIGrids["editor"]["m_Properties"]["vMin"]["x"] = parseFloat(airgVminX.value);
+    AIGrids["editor"]["m_Properties"]["vMin"]["y"] = parseFloat(airgVminY.value);
+    AIGrids["editor"]["m_Properties"]["vMin"]["z"] = parseFloat(airgVminZ.value);
+    AIGrids["editor"]["m_Properties"]["vMax"]["x"] = parseFloat(airgVmaxX.value);
+    AIGrids["editor"]["m_Properties"]["vMax"]["y"] = parseFloat(airgVmaxY.value);
+    AIGrids["editor"]["m_Properties"]["vMax"]["z"] = parseFloat(airgVmaxZ.value);
+    AIGrids["editor"]["m_Properties"]["nGridWidth"] = parseInt(airgNGridWidth.value);
+    AIGrids["editor"]["m_Properties"]["fGridSpacing"] = parseFloat(airgFGridSpacing.value);
+    AIGrids["editor"]["m_Properties"]["nVisibilityRange"] = parseInt(airgNVisibilityRange.value);
+    
+    AIGrids["editor"]["m_HighVisibilityBits"]["m_aBytes"] = JSON.parse(airgHighVisibilityBitsBytes.value);
+    AIGrids["editor"]["m_HighVisibilityBits"]["m_nSize"] = parseInt(airgHighVisibilityBitsSize.value);
+    AIGrids["editor"]["m_LowVisibilityBits"]["m_aBytes"] = JSON.parse(airgLowVisibilityBitsBytes.value);
+    AIGrids["editor"]["m_LowVisibilityBits"]["m_nSize"] = JSON.parse(airgLowVisibilityBitsSize.value);
+    AIGrids["editor"]["m_nNodeCount"] = parseInt(airgNodeCount.value);
+    AIGrids["editor"]["m_WaypointList"] = JSON.parse(airgWaypointList.value);
+    AIGrids["editor"]["m_deadEndData"]["m_aBytes"] = JSON.parse(airgDeadEndDataBytes.value);
+    AIGrids["editor"]["m_deadEndData"]["m_nSize"] = parseInt(airgDeadEndDataSize.value);
+    AIGrids["editor"]["m_pVisibilityData"] = JSON.parse(airgVisibilityData.value);
+    reRender();
+}
+
+function updateAirgEditor() {
+    airgVminX.value = AIGrids["editor"]["m_Properties"]["vMin"]["x"];
+    airgVminY.value = AIGrids["editor"]["m_Properties"]["vMin"]["y"];
+    airgVminZ.value = AIGrids["editor"]["m_Properties"]["vMin"]["z"];
+    airgVmaxX.value = AIGrids["editor"]["m_Properties"]["vMax"]["x"];
+    airgVmaxY.value = AIGrids["editor"]["m_Properties"]["vMax"]["y"];
+    airgVmaxZ.value = AIGrids["editor"]["m_Properties"]["vMax"]["z"];
+    airgNGridWidth.value = AIGrids["editor"]["m_Properties"]["nGridWidth"];
+    airgFGridSpacing.value = AIGrids["editor"]["m_Properties"]["fGridSpacing"];
+    airgNVisibilityRange.value = AIGrids["editor"]["m_Properties"]["nVisibilityRange"];
+    airgHighVisibilityBitsBytes.value = JSON.stringify(AIGrids["editor"]["m_HighVisibilityBits"]["m_aBytes"]);
+    airgHighVisibilityBitsSize.value = AIGrids["editor"]["m_HighVisibilityBits"]["m_nSize"];
+    airgLowVisibilityBitsBytes.value = JSON.stringify(AIGrids["editor"]["m_LowVisibilityBits"]["m_aBytes"]);
+    airgLowVisibilityBitsSize.value = AIGrids["editor"]["m_LowVisibilityBits"]["m_nSize"];
+    airgNodeCount.value = AIGrids["editor"]["m_nNodeCount"];
+    airgWaypointList.value = JSON.stringify(AIGrids["editor"]["m_WaypointList"]);
+    airgDeadEndDataBytes.value = JSON.stringify(AIGrids["editor"]["m_deadEndData"]["m_aBytes"]);
+    airgDeadEndDataSize.value = AIGrids["editor"]["m_deadEndData"]["m_nSize"];
+    airgVisibilityData.value = JSON.stringify(AIGrids["editor"]["m_pVisibilityData"]);
+}
 
 function renderTriangle(v1, v2, v3, color) {
     const geometry = new THREE.BufferGeometry();
@@ -321,7 +423,7 @@ function dist(x0, y0, z0, x1, y1, z1){
 
 function renderAiGrid() {
     console.log("Rendering AI Grid")
-    const airg = AIGrids[selectedMap];
+    const airg = AIGrids["editor"];
     const p = airg["m_Properties"];
     const aiGridBBox = [p.vMin["x"], p.vMin["y"], p.vMin["z"], p.vMax["x"], p.vMax["y"], p.vMax["z"]];
     renderBBox(aiGridBBox);
@@ -339,10 +441,9 @@ function renderAiGrid() {
     for (let i = 0; i < airg["m_WaypointList"].length; ++i) {
         const waypoint = airg["m_WaypointList"][i];
         const pos = waypoint["vPos"];
-        if (highlightedSurface != null) {
-            if (dist(pos["x"], pos["y"], pos["z"], cx, cy, cz) <= maxRadius) {
-                renderText(i, pos["x"], pos["y"], pos["z"], "#aaaaaa", 0.1);
-            }
+        if ((highlightedSurface != null && dist(pos["x"], pos["y"], pos["z"], cx, cy, cz) <= maxRadius) ||
+    checkAiGridShowAll.checked) {
+            renderText(i, pos["x"], pos["y"], pos["z"], "#aaaaaa", 0.1);
         }
         for (let j = 0; j < 8; ++j) {
             let n = waypoint["nNeighbor" + j];
@@ -390,8 +491,10 @@ function reRender() {
         renderSurface(i, surface);
     }
 
+    airgEditor.style.visibility = checkAiGrid.checked ? "visible" : "hidden";
     if (checkAiGrid.checked) {
-        renderAiGrid()
+        renderAiGrid();
+        updateAirgEditor();
     }
 
     
@@ -450,3 +553,7 @@ checkBBox.addEventListener('change', () => reRender());
 checkNumbers.addEventListener('change', () => reRender());
 checkKDTree.addEventListener('change', () => reRender());
 checkAiGrid.addEventListener('change', () => reRender());
+checkAiGridShowAll.addEventListener('change', () => reRender());
+airgFileInput.addEventListener('change', () => onFileSelected(event));
+airgUpdate.addEventListener('click', () => updateAirgFromEditorValues());
+airgSave.addEventListener('click', exportToAirgJson);
