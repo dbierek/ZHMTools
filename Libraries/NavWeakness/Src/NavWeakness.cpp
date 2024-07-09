@@ -9,7 +9,7 @@
 
 #include "NavPower.h"
 
-NavPower::NavMesh LoadNavMeshFromBinary(const char* p_NavMeshPath)
+extern "C" NavPower::NavMesh LoadNavMeshFromBinary(const char* p_NavMeshPath)
 {
 	if (!std::filesystem::is_regular_file(p_NavMeshPath))
 		throw std::runtime_error("Input path is not a regular file.");
@@ -48,7 +48,7 @@ NavPower::NavMesh LoadNavMeshFromBinary(const char* p_NavMeshPath)
 	return s_NavMesh;
 }
 
-NavPower::NavMesh LoadNavMeshFromJson(const char* p_NavMeshPath)
+extern "C" NavPower::NavMesh LoadNavMeshFromJson(const char* p_NavMeshPath)
 {
 	// Read the entire file to memory.
 	if (!std::filesystem::is_regular_file(p_NavMeshPath))
