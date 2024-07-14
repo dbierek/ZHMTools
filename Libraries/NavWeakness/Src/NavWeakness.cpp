@@ -16,6 +16,10 @@ extern "C" NavPower::NavMesh LoadNavMeshFromBinary(const char* p_NavMeshPath)
 
 	// Read the entire file to memory.
 	const long s_FileSize = std::filesystem::file_size(p_NavMeshPath);
+
+	if (s_FileSize < sizeof(NavPower::NavMesh))
+		throw std::runtime_error("Invalid NavMesh File.");
+
 	std::ifstream s_FileStream(p_NavMeshPath, std::ios::in | std::ios::binary);
 
 	if (!s_FileStream)
@@ -218,7 +222,7 @@ extern "C" void OutputNavMesh_HUMAN(const char* p_NavMeshPath, bool b_SourceIsJs
 extern "C" void OutputNavMesh_NAVP_Write(NavPower::NavMesh* p_NavMesh, const char* p_NavMeshOutputPath)
 {
 	// Get output filename and delete file if it exists
-	const std::string s_OutputFileName = std::filesystem::path(p_NavMeshOutputPath).filename().string();
+	const std::string s_OutputFileName = std::filesystem::path(p_NavMeshOutputPath).string();
 	std::filesystem::remove(s_OutputFileName);
 
 	// Write the Navmesh to NAVP binary file
@@ -244,7 +248,7 @@ extern "C" void OutputNavMesh_NAVP(const char *p_NavMeshPath, const char *p_NavM
 extern "C" void OutputNavMesh_JSON_Write(NavPower::NavMesh* p_NavMesh, const char* p_NavMeshOutputPath)
 {
 	// Get output filename and delete file if it exists
-	const std::string s_OutputFileName = std::filesystem::path(p_NavMeshOutputPath).filename().string();
+	const std::string s_OutputFileName = std::filesystem::path(p_NavMeshOutputPath).string();
 	std::filesystem::remove(s_OutputFileName);
 
 	// Write the navp to JSON file
@@ -334,7 +338,7 @@ void OutputNavMesh_VIEWER_print(NavPower::NavMesh* p_NavMesh, const std::string 
 // Outputs the navmesh to a format useable by NavViewer
 extern "C" void OutputNavMesh_VIEWER(const char* p_NavMeshPath, bool b_SourceIsJson)
 {
-	const std::string s_FileName = std::filesystem::path(p_NavMeshPath).filename().string();
+	const std::string s_FileName = std::filesystem::path(p_NavMeshPath).string();
 	if (b_SourceIsJson)
 	{
 		NavPower::NavMesh s_NavMesh = LoadNavMeshFromJson(p_NavMeshPath);

@@ -21,8 +21,6 @@ void PrintHelp()
 	printf("	--human - Outputs the NavMesh in a human readable format instead\n");
 	printf("	--navp <navmesh-output-path> - Saves the NavMesh in NAVP format instead\n");
 	printf("	--navpjson <navmesh-output-path> - Saves the NavMesh in JSON format instead\n");
-	printf("	--airg <navmesh-output-path> - Saves the NavMesh in NAVP format instead\n");
-	printf("	--airgjson <navmesh-output-path> - Saves the NavMesh in JSON format instead\n");
 }
 
 void ParseNavMesh(const std::string &p_Path, bool p_human = false)
@@ -81,36 +79,10 @@ void ParseAndOutputNavMesh(const std::string &p_Path, const std::string& p_Outpu
 		fprintf(stderr, "[ERROR] %s\n", p_Exception.what());
 	}
 }
-void ParseAndOutputAirg(const std::string& p_Path, const std::string& p_OutputPath, bool p_OutputJson = false)
-{
-	try
-	{
-		const auto s_NavMeshPath = std::filesystem::path(p_Path);
-		const auto s_AirgOutputPath = std::filesystem::path(p_OutputPath);
-
-		if (!is_regular_file(s_NavMeshPath))
-		{
-			fprintf(stderr, "[ERROR] Could not find the file you specified.\n");
-			return;
-		}
-		bool b_SourceIsJson = s_NavMeshPath.string().find("JSON") != -1 || s_NavMeshPath.string().find("json") != -1;
-		if (p_OutputJson)
-		{
-			OutputAirg_JSON(s_NavMeshPath.string().c_str(), s_AirgOutputPath.string().c_str(), b_SourceIsJson);
-		}
-		else
-		{
-			OutputAirg_AIRG(s_NavMeshPath.string().c_str(), s_AirgOutputPath.string().c_str(), b_SourceIsJson);
-		}
-	}
-	catch (std::exception& p_Exception)
-	{
-		fprintf(stderr, "[ERROR] %s\n", p_Exception.what());
-	}
-}
 
 int main(int argc, char **argv)
 {
+	printf("Launching NavTool");
 	if (argc < 2)
 	{
 		PrintHelp();
@@ -135,16 +107,6 @@ int main(int argc, char **argv)
 			PrintHelp();
 			return 1;
 		}
-		else if (std::string(argv[2]) == "--airg")
-		{
-			PrintHelp();
-			return 1;
-		}
-		else if (std::string(argv[2]) == "--airgjson")
-		{
-			PrintHelp();
-			return 1;
-		}
 		else
 		{
 			printf("Invalid option used!\n");
@@ -162,15 +124,6 @@ int main(int argc, char **argv)
 		{
 			ParseAndOutputNavMesh(argv[1], argv[3], true);
 		}
-		else if (std::string(argv[2]) == "--airg")
-		{
-			ParseAndOutputAirg(argv[1], argv[3]);
-		}
-		else if (std::string(argv[2]) == "--airgjson")
-		{
-			ParseAndOutputAirg(argv[1], argv[3], true);
-		}
-
 		else
 		{
 			printf("Invalid option used!\n");
