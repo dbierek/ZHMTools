@@ -301,7 +301,7 @@ namespace NavPower
         {
             auto adjacentAreaResult = p_Json.find_field("Adjacent Area");
             if (adjacentAreaResult.error() == simdjson::SUCCESS) {
-                int64_t m_pAdjAreaJson = int64_t(p_Json["Adjacent Area"]);
+                int64_t m_pAdjAreaJson = uint64_t(p_Json["Adjacent Area"]);
                 // Store index of adjacent area + 1 in m_pAdjArea until the area addresses are calculated
                 m_pAdjArea = reinterpret_cast<Binary::Area*>(m_pAdjAreaJson);
             }
@@ -314,7 +314,7 @@ namespace NavPower
             m_flags1 = 0xFFFF0000;
             SetPartition(false);
             SetObID(0);
-            auto result = p_Json.find_field("Type");
+            auto result = p_Json["Type"];
             if (result.error() == simdjson::SUCCESS) {
                 SetType(EdgeTypeStringToEnumValue(std::string{ std::string_view(p_Json["Type"]) }));
             }
@@ -322,9 +322,9 @@ namespace NavPower
             {
                 SetType(EDGE_NORMAL);
             }
-            auto flags2Result = p_Json.find_field("Flags");
+            auto flags2Result = p_Json["Flags"];
             if (flags2Result.error() == simdjson::SUCCESS) {
-                m_flags2 = int64_t(p_Json["Flags"]);
+                m_flags2 = uint64_t(p_Json["Flags"]);
             }
             else
             {
