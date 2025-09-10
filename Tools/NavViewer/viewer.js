@@ -73,9 +73,9 @@ async function exportToAirgJson() {
 }
 
 function onFileSelected(event) {
-    var selectedFile = event.target.files[0];
-    var reader = new FileReader();
-  
+    const selectedFile = event.target.files[0];
+    const reader = new FileReader();
+
     reader.onload = function(event) {
         AIGrids["editor"] = JSON.parse(event.target.result);
         reRender();
@@ -447,7 +447,7 @@ function renderAiGrid() {
         }
         for (let j = 0; j < 8; ++j) {
             let n = waypoint["nNeighbor" + j];
-            if (n != 65535) {
+            if (n !== 65535) {
                 const nWaypoint = airg["m_WaypointList"][n];
                 const npos = nWaypoint["vPos"];
                 renderLine(pos["x"], pos["y"], pos["z"], npos["x"], npos["y"], npos["z"], 0xFF0000);
